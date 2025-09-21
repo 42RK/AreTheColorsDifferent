@@ -380,7 +380,7 @@
         </div>
 
         <!-- Reset Button -->
-        <button id="resetButton" class="absolute bottom-4 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors duration-200">reset game</button>
+        <button id="resetButton" class="absolute bottom-4 px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200 text-sm">reset game (R)</button>
 
     </div>
 
@@ -833,6 +833,12 @@
                 // Easter egg toggle
                 if (event.key === 'e') {
                     toggleEasterEgg();
+                    return;
+                }
+
+                // Reset game with 'R'
+                if (event.key.toLowerCase() === 'r') {
+                    resetButton.click();
                     return;
                 }
 
