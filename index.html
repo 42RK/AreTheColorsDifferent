@@ -223,7 +223,12 @@
                 <p id="score-text" class="text-lg font-medium text-gray-600">0/0 answers correct</p>
                 <span id="score-tooltip" class="tooltiptext"></span>
             </div>
-            <h1 id="game-title" class="text-4xl font-extrabold text-gray-800 tracking-tight">Are The Colors Different?</h1>
+            <h1 id="game-title" class="text-4xl font-extrabold text-gray-800 tracking-tight">
+                <span id="wordAre">Are</span>
+                <span id="wordThe">The</span>
+                <span id="wordColors">Colors</span>
+                <span id="wordDifferent">Different?</span>
+            </h1>
             <div class="flex items-center justify-center space-x-2 text-xl font-bold text-gray-500">
                 <span>difficulty:</span>
                 <select id="difficulty-select" class="bg-gray-200 px-2 py-1 rounded-md border border-gray-400">
@@ -337,35 +342,35 @@
                     <table class="w-full text-left text-gray-700 border-collapse">
                         <thead>
                             <tr class="bg-gray-200">
-                                <th class="p-2 border-b border-gray-300 rounded-tl-lg">Difficulty</th>
-                                <th class="p-2 border-b border-gray-300">Description</th>
-                                <th class="p-2 border-b border-gray-300 rounded-tr-lg">Color Difference</th>
+                                <th class="p-2 border-b border-gray-300 rounded-tl-lg">difficulty</th>
+                                <th class="p-2 border-b border-gray-300">description</th>
+                                <th class="p-2 border-b border-gray-300 rounded-tr-lg">color difference</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="p-2 border-b border-gray-300 font-bold">Impossible</td>
-                                <td class="p-2 border-b border-gray-300">Barely perceptible</td>
+                                <td class="p-2 border-b border-gray-300 font-bold">impossible</td>
+                                <td class="p-2 border-b border-gray-300">barely perceptible</td>
                                 <td class="p-2 border-b border-gray-300">1</td>
                             </tr>
                             <tr>
-                                <td class="p-2 border-b border-gray-300 font-bold">Insane</td>
-                                <td class="p-2 border-b border-gray-300">Very subtle</td>
+                                <td class="p-2 border-b border-gray-300 font-bold">insane</td>
+                                <td class="p-2 border-b border-gray-300">very subtle</td>
                                 <td class="p-2 border-b border-gray-300">2</td>
                             </tr>
                             <tr>
-                                <td class="p-2 border-b border-gray-300 font-bold">Hard</td>
-                                <td class="p-2 border-b border-gray-300">Subtle</td>
+                                <td class="p-2 border-b border-gray-300 font-bold">hard</td>
+                                <td class="p-2 border-b border-gray-300">subtle</td>
                                 <td class="p-2 border-b border-gray-300">3</td>
                             </tr>
                             <tr>
-                                <td class="p-2 border-b border-gray-300 font-bold">Normal</td>
-                                <td class="p-2 border-b border-gray-300">Noticeable</td>
+                                <td class="p-2 border-b border-gray-300 font-bold">normal</td>
+                                <td class="p-2 border-b border-gray-300">noticeable</td>
                                 <td class="p-2 border-b border-gray-300">4</td>
                             </tr>
                             <tr>
-                                <td class="p-2 border-b border-gray-300">Easy</td>
-                                <td class="p-2 border-b border-gray-300">Obvious</td>
+                                <td class="p-2 border-b border-gray-300 font-bold">easy</td>
+                                <td class="p-2 border-b border-gray-300">obvious</td>
                                 <td class="p-2 border-b border-gray-300">5</td>
                             </tr>
                         </tbody>
@@ -422,6 +427,11 @@
             const resetButton = document.getElementById('resetButton');
             const favicon = document.getElementById('favicon');
             const keyboardControls = document.getElementById('keyboardControls');
+            const wordAre = document.getElementById('wordAre');
+            const wordThe = document.getElementById('wordThe');
+            const wordColors = document.getElementById('wordColors');
+            const wordDifferent = document.getElementById('wordDifferent');
+
 
             // Game state variables
             let correctAnswers = 0;
@@ -434,6 +444,7 @@
             let timer;
             let timeRemaining;
             let seamLineExists = true;
+            let easterEggMode = false;
 
             // Function to save settings to localStorage
             function saveSettings() {
@@ -581,7 +592,9 @@
                         noButton.classList.add('glow-red');
                         setTimeout(() => noButton.classList.remove('glow-red'), 600);
                     }
-                    gameTitle.textContent = "CORRECT";
+                    if (!easterEggMode) {
+                        gameTitle.textContent = "CORRECT";
+                    }
                     gameTitle.classList.remove('text-gray-800');
                     gameTitle.classList.add('text-green-500');
                 } else {
@@ -592,7 +605,9 @@
                         noButton.classList.add('shake');
                         setTimeout(() => noButton.classList.remove('shake'), 300);
                     }
-                    gameTitle.textContent = "WRONG";
+                    if (!easterEggMode) {
+                        gameTitle.textContent = "WRONG";
+                    }
                     gameTitle.classList.remove('text-gray-800');
                     gameTitle.classList.add('text-red-500');
                 }
@@ -600,7 +615,9 @@
                 updateScoreDisplay();
 
                 setTimeout(() => {
-                    gameTitle.textContent = "Are The Colors Different?";
+                    if (!easterEggMode) {
+                        gameTitle.textContent = "Are The Colors Different?";
+                    }
                     gameTitle.classList.remove('text-green-500', 'text-red-500');
                     gameTitle.classList.add('text-gray-800');
                     newRound();
@@ -791,8 +808,34 @@
                 helpBox.classList.add('hidden');
             });
 
-            // Add keyboard event listener for game controls
+            // Easter egg function
+            function toggleEasterEgg() {
+                easterEggMode = !easterEggMode;
+                if (easterEggMode) {
+                    gameTitle.textContent = "";
+                    gameTitle.style.display = 'block';
+                    wordAre.style.color = '#ffffff';
+                    wordThe.style.color = '#010000';
+                    wordColors.style.color = '#000100';
+                    wordDifferent.style.color = '#000001';
+                } else {
+                    gameTitle.textContent = "Are The Colors Different?";
+                    gameTitle.style.display = 'block';
+                    wordAre.style.color = '';
+                    wordThe.style.color = '';
+                    wordColors.style.color = '';
+                    wordDifferent.style.color = '';
+                }
+            }
+
+            // Keyboard event listener for game controls and easter egg
             document.addEventListener('keydown', (event) => {
+                // Easter egg toggle
+                if (event.key === 'e') {
+                    toggleEasterEgg();
+                    return;
+                }
+
                 if (!isGameRunning || pausedOverlay.style.display === 'flex' || !messageBox.classList.contains('hidden')) {
                     return; // Do nothing if game is not running, paused, or message box is shown
                 }
