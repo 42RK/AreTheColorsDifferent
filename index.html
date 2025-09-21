@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Are The Colors Different?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #f3f4f6;
+      }
+      .game-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        position: relative;
+      }
+      .color-square-container {
+        display: flex;
+        gap: 0;
+        margin-top: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+      }
+      .color-square {
+        width: 250px;
+        height: 250px;
+        border: none;
+      }
+      @media (min-width: 640px) {
+        .color-square {
+          width: 300px;
+          height: 300px;
+        }
+      }
+      .seam-line {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        width: 4px;
+        height: 100%;
+        background-color: transparent;
+        border-left: 4px dotted;
+        transform: translateX(-50%);
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      .seam-line.visible {
+        opacity: 1;
+      }
+      .button-group {
+        display: flex;
+        gap: 1rem;
+      }
+      /* Correct answer glow effect */
+      .glow-green {
+        animation: pulse-green 0.6s ease-out;
+      }
+      @keyframes pulse-green {
+        0% {
+          box-shadow: 0 0 0 0px rgba(34, 197, 94, 0.7);
+        }
+        100% {
+          box-shadow: 0 0 0 16px rgba(34, 197, 94, 0);
+        }
+      }
+      .glow-red {
+        animation: pulse-red 0.6s ease-out;
+      }
+      @keyframes pulse-red {
+        0% {
+          box-shadow: 0 0 0 0px rgba(239, 68, 68, 0.7);
+        }
+        100% {
+          box-shadow: 0 0 0 16px rgba(239, 68, 68, 0);
+        }
+      }
+
+      /* Incorrect answer shake effect */
+      .shake {
+        animation: shake 0.3s ease-in-out;
+      }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
+        }
+        25% {
+          transform: translateX(-15px);
+        }
+        50% {
+          transform: translateX(15px);
+        }
+        75% {
+          transform: translateX(-15px);
+        }
+      }
+
+      .timer-bar-container {
+        width: 100%;
+        max-width: 600px;
+        height: 12px;
+        background-color: #e5e7eb;
+        border-radius: 9999px;
+        margin-bottom: 1rem;
+        overflow: hidden;
+      }
+
+      .timer-bar {
+        height: 100%;
+        width: 100%;
+        background-color: #22c55e;
+        transition: width 0.1s linear, background-color 0.5s ease;
+      }
+
+      .toggle-switch-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+      }
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+      input:checked + .slider {
+        background-color: #2196f3;
+      }
+      input:checked + .slider:before {
+        transform: translateX(26px);
+      }
+
+      .seam-line-time-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      /* Pause overlay */
+      .paused-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        color: white;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        border-radius: 0.5rem;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <div class="game-container">
+      <!-- Help Button -->
+      <button
+        id="helpButton"
+        class="absolute top-4 left-4 p-2 bg-gray-200 text-gray-700 font-bold rounded-full shadow-md hover:bg-gray-300 transition-colors duration-200 text-sm w-10 h-10 flex items-center justify-center"
+      >
+        ?
+      </button>
+
+      <div class="text-center w-full mb-4 space-y-2">
+        <p id="score-text" class="text-lg font-medium text-gray-600">
+          0/0 answers correct
+        </p>
+        <h1
+          id="game-title"
+          class="text-4xl font-extrabold text-gray-800 tracking-tight"
+        >
+          Are The Colors Different?
+        </h1>
+        <div
+          class="flex items-center justify-center space-x-2 text-xl font-bold text-gray-500"
+        >
+          <span>difficulty:</span>
+          <select
+            id="difficulty-select"
+            class="bg-gray-200 px-2 py-1 rounded-md border border-gray-400"
+          >
+            <option value="1" selected>impossible</option>
+            <option value="2">insane</option>
+            <option value="3">hard</option>
+            <option value="4">normal</option>
+            <option value="5">easy</option>
+          </select>
+        </div>
+
+        <!-- Seam Line Settings -->
+        <div
+          id="seamLineOptions"
+          class="flex flex-col items-center mt-4 space-y-2"
+        >
+          <div class="flex items-center space-x-2">
+            <span class="text-sm font-medium text-gray-700">Seam Line:</span>
+            <label class="toggle-switch">
+              <input type="checkbox" id="seamLineToggle" checked />
+              <span class="slider"></span>
+            </label>
+            <!-- Seam line time button and slider container -->
+            <div class="seam-line-time-container">
+              <button
+                id="seamLineTimeButton"
+                class="px-3 py-1 bg-gray-200 text-gray-700 font-bold rounded-lg shadow-md hover:bg-gray-300 transition-colors duration-200 text-sm"
+              >
+                time
+              </button>
+              <div id="seamLineTimeSliderContainer" class="hidden">
+                <label
+                  for="seam-line-slider"
+                  class="text-sm font-medium text-gray-700"
+                  ><span id="seam-line-value">2.5</span>s</label
+                >
+                <input
+                  type="range"
+                  id="seam-line-slider"
+                  min="0.1"
+                  max="5"
+                  value="2.5"
+                  step="0.1"
+                  class="w-24 mt-2"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-col items-center">
+          <div class="toggle-switch-container">
+            <label class="text-xl font-bold text-gray-500">Normal</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="modeSwitch" />
+              <span class="slider"></span>
+            </label>
+            <label class="text-xl font-bold text-gray-500">Time Attack</label>
+          </div>
+        </div>
+      </div>
+
+      <div
+        id="timeAttackOptions"
+        class="hidden text-center w-full mb-4 space-y-2"
+      >
+        <h2 class="text-2xl font-bold text-gray-700">Time Attack Settings</h2>
+        <div class="flex flex-col items-center mt-4">
+          <label
+            for="time-per-answer-slider"
+            class="text-sm font-medium text-gray-700"
+            >Time per answer (seconds):
+            <span id="time-per-answer-value">3</span></label
+          >
+          <input
+            type="range"
+            id="time-per-answer-slider"
+            min="1"
+            max="10"
+            value="3"
+            step="0.5"
+            class="w-64 mt-2"
+          />
+        </div>
+        <div class="flex flex-col items-center mt-2">
+          <label
+            for="questions-slider"
+            class="text-sm font-medium text-gray-700"
+            >Number of questions: <span id="questions-value">20</span></label
+          >
+          <input
+            type="range"
+            id="questions-slider"
+            min="10"
+            max="50"
+            value="20"
+            step="5"
+            class="w-64 mt-2"
+          />
+        </div>
+        <div class="flex justify-center gap-4 mt-4">
+          <button
+            id="startTimedGameButton"
+            class="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition-colors duration-200 text-xl"
+          >
+            Start Timed Game
+          </button>
+        </div>
+      </div>
+
+      <div id="timedButtons" class="hidden flex justify-center gap-4 mt-4">
+        <button
+          id="pauseButton"
+          class="px-6 py-3 bg-yellow-500 text-white font-bold rounded-lg shadow-md hover:bg-yellow-600 transition-colors duration-200 text-xl"
+        >
+          Pause
+        </button>
+        <button
+          id="quitGameButton"
+          class="px-6 py-3 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200 text-xl"
+        >
+          Quit
+        </button>
+      </div>
+
+      <div class="timer-bar-container hidden" id="timerBarContainer">
+        <div class="timer-bar" id="timerBar"></div>
+      </div>
+
+      <div id="gameElements" class="flex flex-col items-center">
+        <div class="color-square-container">
+          <div id="square1" class="color-square rounded-l-lg"></div>
+          <div id="square2" class="color-square rounded-r-lg"></div>
+          <div id="seamLine" class="seam-line"></div>
+          <div id="pausedOverlay" class="paused-overlay hidden">
+            <span class="text-5xl font-extrabold mb-4">PAUSED</span>
+            <button
+              id="unpauseButton"
+              class="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg shadow-md hover:bg-blue-600 transition-colors duration-200 text-xl"
+            >
+              Unpause
+            </button>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button
+            id="yesButton"
+            class="px-8 py-4 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition-colors duration-200 text-xl"
+          >
+            yes
+          </button>
+          <button
+            id="noButton"
+            class="px-8 py-4 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200 text-xl"
+          >
+            no
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom message box for game over -->
+      <div
+        id="messageBox"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4"
+      >
+        <div
+          class="bg-white p-8 rounded-xl shadow-2xl text-center space-y-4 max-w-sm"
+        >
+          <h2 id="messageTitle" class="text-3xl font-extrabold text-gray-800">
+            Game Over!
+          </h2>
+          <p id="messageText" class="text-lg text-gray-600">
+            Your final score is 0 correct answers.
+          </p>
+          <button
+            id="playAgainButton"
+            class="px-6 py-3 bg-indigo-600 text-white font-bold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
+          >
+            Play Again
+          </button>
+        </div>
+      </div>
+
+      <!-- Help Pop-up -->
+      <div
+        id="helpBox"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden p-4"
+      >
+        <div
+          class="bg-white p-8 rounded-xl shadow-2xl text-center max-w-lg w-full"
+        >
+          <div class="flex justify-between items-start">
+            <h2 class="text-3xl font-extrabold text-gray-800 mb-4">
+              How to Play
+            </h2>
+            <button
+              id="closeHelpButton"
+              class="text-2xl font-bold text-gray-500 hover:text-gray-700"
+            >
+              &times;
+            </button>
+          </div>
+          <p class="text-left text-lg text-gray-600 mb-4">
+            The goal of this game is to determine whether the colors in the two
+            squares are different. When a new round begins, a temporary vertical
+            line will appear between the squares to help you see the difference.
+            <br /><br />
+            The difficulty setting controls how subtle the color difference is.
+            The higher the difficulty, the smaller the difference. The game
+            achieves this by adjusting a single RGB channel by a small value.
+          </p>
+          <div class="mt-6">
+            <table class="w-full text-left text-gray-700 border-collapse">
+              <thead>
+                <tr class="bg-gray-200">
+                  <th class="p-2 border-b border-gray-300 rounded-tl-lg">
+                    Difficulty
+                  </th>
+                  <th class="p-2 border-b border-gray-300">Description</th>
+                  <th class="p-2 border-b border-gray-300 rounded-tr-lg">
+                    Color Difference
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="p-2 border-b border-gray-300 font-bold">
+                    Impossible
+                  </td>
+                  <td class="p-2 border-b border-gray-300">
+                    Barely perceptible
+                  </td>
+                  <td class="p-2 border-b border-gray-300">1</td>
+                </tr>
+                <tr>
+                  <td class="p-2 border-b border-gray-300 font-bold">Insane</td>
+                  <td class="p-2 border-b border-gray-300">Very subtle</td>
+                  <td class="p-2 border-b border-gray-300">2</td>
+                </tr>
+                <tr>
+                  <td class="p-2 border-b border-gray-300 font-bold">Hard</td>
+                  <td class="p-2 border-b border-gray-300">Subtle</td>
+                  <td class="p-2 border-b border-gray-300">3</td>
+                </tr>
+                <tr>
+                  <td class="p-2 border-b border-gray-300 font-bold">Normal</td>
+                  <td class="p-2 border-b border-gray-300">Noticeable</td>
+                  <td class="p-2 border-b border-gray-300">4</td>
+                </tr>
+                <tr>
+                  <td class="p-2 border-b border-gray-300">Easy</td>
+                  <td class="p-2 border-b border-gray-300">Obvious</td>
+                  <td class="p-2 border-b border-gray-300">5</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.onload = function () {
+        // Get DOM elements
+        const scoreText = document.getElementById("score-text");
+        const yesButton = document.getElementById("yesButton");
+        const noButton = document.getElementById("noButton");
+        const gameElements = document.getElementById("gameElements");
+        const square1 = document.getElementById("square1");
+        const square2 = document.getElementById("square2");
+        const seamLine = document.getElementById("seamLine");
+        const difficultySelect = document.getElementById("difficulty-select");
+        const seamLineSlider = document.getElementById("seam-line-slider");
+        const seamLineValue = document.getElementById("seam-line-value");
+        const modeSwitch = document.getElementById("modeSwitch");
+        const seamLineOptions = document.getElementById("seamLineOptions");
+        const seamLineToggle = document.getElementById("seamLineToggle");
+        const seamLineTimeButton =
+          document.getElementById("seamLineTimeButton");
+        const seamLineTimeSliderContainer = document.getElementById(
+          "seamLineTimeSliderContainer"
+        );
+        const timeAttackOptions = document.getElementById("timeAttackOptions");
+        const timePerAnswerSlider = document.getElementById(
+          "time-per-answer-slider"
+        );
+        const timePerAnswerValue = document.getElementById(
+          "time-per-answer-value"
+        );
+        const questionsSlider = document.getElementById("questions-slider");
+        const questionsValue = document.getElementById("questions-value");
+        const startTimedGameButton = document.getElementById(
+          "startTimedGameButton"
+        );
+        const timedButtons = document.getElementById("timedButtons");
+        const pauseButton = document.getElementById("pauseButton");
+        const quitGameButton = document.getElementById("quitGameButton");
+        const timerBarContainer = document.getElementById("timerBarContainer");
+        const timerBar = document.getElementById("timerBar");
+        const messageBox = document.getElementById("messageBox");
+        const messageTitle = document.getElementById("messageTitle");
+        const messageText = document.getElementById("messageText");
+        const playAgainButton = document.getElementById("playAgainButton");
+        const gameTitle = document.getElementById("game-title");
+        const helpButton = document.getElementById("helpButton");
+        const helpBox = document.getElementById("helpBox");
+        const closeHelpButton = document.getElementById("closeHelpButton");
+        const pausedOverlay = document.getElementById("pausedOverlay");
+        const unpauseButton = document.getElementById("unpauseButton");
+
+        // Game state variables
+        let correctAnswers = 0;
+        let totalQuestions = 20;
+        let currentQuestion = 0;
+        let areColorsDifferent = false;
+        let isGameRunning = false;
+        let isTimeAttack = false;
+        let timePerAnswer = 3000;
+        let timer;
+        let timeRemaining;
+        let seamLineExists = true;
+
+        // Function to get the difficulty offset
+        function getDifficultyOffset() {
+          return parseInt(difficultySelect.value, 10);
+        }
+
+        // Function to generate a random RGB value within a non-extreme range
+        function getRandomRgbValue() {
+          return Math.floor(Math.random() * (200 - 50 + 1)) + 50;
+        }
+
+        // Function to find the inverse color
+        function getInverseColor(rgbString) {
+          const rgb = rgbString.match(/\d+/g).map(Number);
+          const inverseR = 255 - rgb[0];
+          const inverseG = 255 - rgb[1];
+          const inverseB = 255 - rgb[2];
+          return `rgb(${inverseR}, ${inverseG}, ${inverseB})`;
+        }
+
+        // Function to start a new round
+        function newRound() {
+          if (!isGameRunning) return;
+
+          if (isTimeAttack && currentQuestion >= totalQuestions) {
+            endGame();
+            return;
+          }
+
+          if (isTimeAttack) {
+            resetTimer();
+            startTimer();
+          }
+
+          const r1 = getRandomRgbValue();
+          const g1 = getRandomRgbValue();
+          const b1 = getRandomRgbValue();
+          const color1 = `rgb(${r1}, ${g1}, ${b1})`;
+
+          areColorsDifferent = Math.random() < 0.5;
+          let r2 = r1,
+            g2 = g1,
+            b2 = b1;
+          const offset = getDifficultyOffset();
+
+          if (areColorsDifferent) {
+            const channelToChange = Math.floor(Math.random() * 3);
+            const changeDirection = Math.random() < 0.5 ? offset : -offset;
+
+            switch (channelToChange) {
+              case 0:
+                r2 = Math.min(255, Math.max(0, r1 + changeDirection));
+                break;
+              case 1:
+                g2 = Math.min(255, Math.max(0, g1 + changeDirection));
+                break;
+              case 2:
+                b2 = Math.min(255, Math.max(0, b1 + changeDirection));
+                break;
+            }
+          }
+
+          const color2 = `rgb(${r2}, ${g2}, ${b2})`;
+
+          square1.style.backgroundColor = color1;
+          square2.style.backgroundColor = color2;
+
+          if (seamLineExists) {
+            const seamLineDuration = parseFloat(seamLineSlider.value) * 1000;
+            if (seamLineDuration > 0) {
+              seamLine.style.borderLeftColor = getInverseColor(color1);
+              seamLine.classList.add("visible");
+              setTimeout(() => {
+                seamLine.classList.remove("visible");
+              }, seamLineDuration);
+            }
+          } else {
+            seamLine.classList.remove("visible");
+          }
+        }
+
+        // Function to check the user's answer
+        function checkAnswer(userSaidDifferent) {
+          if (!isGameRunning) return;
+
+          if (isTimeAttack) {
+            clearInterval(timer);
+          }
+
+          currentQuestion++;
+          const isCorrect = userSaidDifferent === areColorsDifferent;
+          if (isCorrect) {
+            correctAnswers++;
+            if (userSaidDifferent) {
+              yesButton.classList.add("glow-green");
+              setTimeout(() => yesButton.classList.remove("glow-green"), 600);
+            } else {
+              noButton.classList.add("glow-red");
+              setTimeout(() => noButton.classList.remove("glow-red"), 600);
+            }
+            gameTitle.textContent = "CORRECT";
+            gameTitle.classList.remove("text-gray-800");
+            gameTitle.classList.add("text-green-500");
+          } else {
+            if (userSaidDifferent) {
+              yesButton.classList.add("shake");
+              setTimeout(() => yesButton.classList.remove("shake"), 300);
+            } else {
+              noButton.classList.add("shake");
+              setTimeout(() => noButton.classList.remove("shake"), 300);
+            }
+            gameTitle.textContent = "WRONG";
+            gameTitle.classList.remove("text-gray-800");
+            gameTitle.classList.add("text-red-500");
+          }
+
+          updateScoreDisplay();
+
+          setTimeout(() => {
+            gameTitle.textContent = "Are The Colors Different?";
+            gameTitle.classList.remove("text-green-500", "text-red-500");
+            gameTitle.classList.add("text-gray-800");
+            newRound();
+          }, 500);
+        }
+
+        // Timer functions
+        function startTimer() {
+          timeRemaining = timePerAnswer;
+          const updateInterval = 100; // Update every 100ms
+          timer = setInterval(() => {
+            timeRemaining -= updateInterval;
+            if (timeRemaining <= 0) {
+              clearInterval(timer);
+              checkAnswer(!areColorsDifferent); // Fails the challenge
+            }
+            const percentage = (timeRemaining / timePerAnswer) * 100;
+            timerBar.style.width = `${percentage}%`;
+            if (percentage < 30) {
+              timerBar.style.backgroundColor = "#ef4444"; // Red
+            } else if (percentage < 60) {
+              timerBar.style.backgroundColor = "#f97316"; // Orange
+            } else {
+              timerBar.style.backgroundColor = "#22c55e"; // Green
+            }
+          }, updateInterval);
+        }
+
+        function resetTimer() {
+          clearInterval(timer);
+          timerBar.style.width = "100%";
+          timerBar.style.backgroundColor = "#22c55e";
+        }
+
+        // Function to update the score display
+        function updateScoreDisplay() {
+          if (isTimeAttack) {
+            scoreText.textContent = `${correctAnswers}/${totalQuestions} answers correct`;
+          } else {
+            scoreText.textContent = `${correctAnswers}/${currentQuestion} answers correct`;
+          }
+        }
+
+        // Function to start the game
+        function startGame() {
+          isGameRunning = true;
+          currentQuestion = 0;
+          correctAnswers = 0;
+          messageBox.classList.add("hidden");
+          updateScoreDisplay();
+          newRound();
+        }
+
+        // Function to quit timed game
+        function quitTimedGame() {
+          clearInterval(timer);
+          isGameRunning = false;
+          isTimeAttack = false;
+          modeSwitch.checked = false;
+          timedButtons.classList.add("hidden");
+          timerBarContainer.classList.add("hidden");
+          pausedOverlay.style.display = "none";
+
+          // Hide time attack options and show normal game elements
+          timeAttackOptions.classList.add("hidden");
+          yesButton.style.display = "flex";
+          noButton.style.display = "flex";
+          gameElements.classList.remove("hidden");
+
+          startGame();
+        }
+
+        // Function to end the game and show the final score
+        function endGame() {
+          isGameRunning = false;
+          clearInterval(timer);
+          messageTitle.textContent = "Game Over!";
+          messageText.textContent = `You got ${correctAnswers} out of ${totalQuestions} answers correct.`;
+          messageBox.classList.remove("hidden");
+        }
+
+        // Pause/Unpause functions
+        function pauseGame() {
+          if (!isGameRunning) return;
+          clearInterval(timer);
+          yesButton.style.display = "none";
+          noButton.style.display = "none";
+          seamLine.classList.remove("visible");
+          pausedOverlay.style.display = "flex";
+        }
+
+        function unpauseGame() {
+          if (!isGameRunning) return;
+          startTimer();
+          yesButton.style.display = "flex";
+          noButton.style.display = "flex";
+          pausedOverlay.style.display = "none";
+        }
+
+        // Add event listeners
+        yesButton.addEventListener("click", () => checkAnswer(true));
+        noButton.addEventListener("click", () => checkAnswer(false));
+        playAgainButton.addEventListener("click", startGame);
+
+        // Difficulty and slider listeners
+        difficultySelect.addEventListener("change", () => {
+          if (!isTimeAttack) {
+            startGame();
+          }
+        });
+        seamLineSlider.addEventListener("input", () => {
+          seamLineValue.textContent = seamLineSlider.value;
+        });
+
+        // Toggle seam line time slider
+        seamLineTimeButton.addEventListener("click", () => {
+          seamLineTimeSliderContainer.classList.toggle("hidden");
+        });
+
+        // Seam line toggle listener
+        seamLineToggle.addEventListener("change", (e) => {
+          seamLineExists = e.target.checked;
+          // Hide the time button if the seam line is toggled off
+          seamLineTimeButton.style.display = e.target.checked
+            ? "block"
+            : "none";
+          seamLineTimeSliderContainer.classList.add("hidden");
+        });
+
+        // Mode switch listener
+        modeSwitch.addEventListener("change", (e) => {
+          isTimeAttack = e.target.checked;
+          if (isTimeAttack) {
+            timeAttackOptions.classList.remove("hidden");
+            gameElements.classList.add("hidden");
+          } else {
+            timeAttackOptions.classList.add("hidden");
+            gameElements.classList.remove("hidden");
+            quitTimedGame();
+          }
+        });
+
+        // Time attack settings listeners
+        startTimedGameButton.addEventListener("click", () => {
+          totalQuestions = parseInt(questionsSlider.value, 10);
+          timePerAnswer = parseFloat(timePerAnswerSlider.value) * 1000;
+          isGameRunning = true;
+          timeAttackOptions.classList.add("hidden");
+          gameElements.classList.remove("hidden");
+          timerBarContainer.classList.remove("hidden");
+          timedButtons.classList.remove("hidden");
+
+          startGame();
+        });
+
+        // Timed mode pause/quit buttons
+        pauseButton.addEventListener("click", pauseGame);
+        unpauseButton.addEventListener("click", unpauseGame);
+        quitGameButton.addEventListener("click", quitTimedGame);
+
+        timePerAnswerSlider.addEventListener("input", () => {
+          timePerAnswerValue.textContent = timePerAnswerSlider.value;
+        });
+
+        questionsSlider.addEventListener("input", () => {
+          questionsValue.textContent = questionsSlider.value;
+        });
+
+        // Help button listeners
+        helpButton.addEventListener("click", () => {
+          helpBox.classList.remove("hidden");
+        });
+
+        closeHelpButton.addEventListener("click", () => {
+          helpBox.classList.add("hidden");
+        });
+
+        // Initial setup for normal mode and game start
+        startGame();
+      };
+    </script>
+  </body>
+</html>
