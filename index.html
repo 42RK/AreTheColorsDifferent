@@ -306,7 +306,7 @@
             </div>
             <!-- New element for keyboard controls hint -->
             <div id="keyboardControls" class="mt-2 text-sm text-gray-500 font-medium">
-                <span>&#8592; No</span> | <span>Yes &#8594;</span>
+                <span>&#8592; Yes</span> | <span>No &#8594;</span>
             </div>
         </div>
 
@@ -787,9 +787,9 @@
                     return; // Do nothing if game is not running, paused, or message box is shown
                 }
                 if (event.key === 'ArrowLeft') {
-                    noButton.click();
-                } else if (event.key === 'ArrowRight') {
                     yesButton.click();
+                } else if (event.key === 'ArrowRight') {
+                    noButton.click();
                 }
             });
 
