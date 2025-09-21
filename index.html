@@ -304,6 +304,10 @@
                 <button id="yesButton" class="px-8 py-4 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition-colors duration-200 text-xl">yes</button>
                 <button id="noButton" class="px-8 py-4 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200 text-xl">no</button>
             </div>
+            <!-- New element for keyboard controls hint -->
+            <div id="keyboardControls" class="mt-2 text-sm text-gray-500 font-medium hidden">
+                <span>&#8592; No</span> | <span>Yes &#8594;</span>
+            </div>
         </div>
 
 
@@ -416,6 +420,7 @@
             const unpauseButton = document.getElementById('unpauseButton');
             const resetButton = document.getElementById('resetButton');
             const favicon = document.getElementById('favicon');
+            const keyboardControls = document.getElementById('keyboardControls');
 
             // Game state variables
             let correctAnswers = 0;
@@ -693,6 +698,11 @@
                 pausedOverlay.style.display = 'none';
             }
 
+            // Function to detect if the device has a touchscreen
+            function isTouchDevice() {
+                return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+            }
+
             // Add event listeners
             yesButton.addEventListener('click', () => checkAnswer(true));
             noButton.addEventListener('click', () => checkAnswer(false));
@@ -770,6 +780,24 @@
             closeHelpButton.addEventListener('click', () => {
                 helpBox.classList.add('hidden');
             });
+            
+            // Show keyboard controls if not a touch device
+            if (!isTouchDevice()) {
+                keyboardControls.classList.remove('hidden');
+            }
+
+            // Add keyboard event listener for game controls
+            document.addEventListener('keydown', (event) => {
+                if (!isGameRunning || pausedOverlay.style.display === 'flex' || !messageBox.classList.contains('hidden')) {
+                    return; // Do nothing if game is not running, paused, or message box is shown
+                }
+                if (event.key === 'ArrowLeft') {
+                    noButton.click();
+                } else if (event.key === 'ArrowRight') {
+                    yesButton.click();
+                }
+            });
+
 
             // Initial setup for normal mode and game start
             loadSettings();
