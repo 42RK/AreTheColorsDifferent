@@ -637,8 +637,17 @@
             // Function to update the score display
             function updateScoreDisplay() {
                 const total = isTimeAttack ? totalQuestions : currentQuestion;
+                let randomScore;
+
+                if (total % 2 !== 0) {
+                    // Odd number of questions, randomly round up or down
+                    randomScore = Math.random() < 0.5 ? Math.floor(total / 2) : Math.ceil(total / 2);
+                } else {
+                    // Even number of questions
+                    randomScore = total / 2;
+                }
+                
                 scoreText.textContent = `${correctAnswers}/${total} answers correct`;
-                const randomScore = Math.floor(total / 2);
                 scoreTooltip.textContent = `On average, the score would be ${randomScore} if you answered randomly`;
             }
 
