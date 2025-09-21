@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Are The Colors Different?</title>
-    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggdFgIh/pT3eAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVUoAABu88m4AAAAATUlEQVQ4y2NgGPxgA/gA4k8AowA4kYgAygASlYyMjo+P//8wMDAyMDJgYGBgAAOAAAw8fPw+o/iBgYEBAJk2kCQAJdABhQYGBgYGAGFk/w8CgYGBgABhAAAhbQ5GkgoAAAAASUVORK5CYII=">
+    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggdFgIh/pT3eAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlY2F0ZWQgd2l0aCBHSU1Vd2/jTzYAAAAASUVORK5CYII=">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -93,6 +93,7 @@
             border-radius: 9999px;
             margin-bottom: 1rem;
             overflow: hidden;
+            margin-top: 0.5rem;
         }
 
         .timer-bar {
@@ -268,12 +269,12 @@
         <div id="timeAttackOptions" class="hidden text-center w-full mb-4 space-y-2">
             <h2 class="text-2xl font-bold text-gray-700">Time Attack Settings</h2>
             <div class="flex flex-col items-center mt-4">
-                <label for="time-per-answer-slider" class="text-sm font-medium text-gray-700">Time per answer (seconds): <span id="time-per-answer-value">3</span></label>
-                <input type="range" id="time-per-answer-slider" min="1" max="10" value="3" step="0.5" class="w-64 mt-2">
+                <label for="time-per-answer-slider" class="text-sm font-medium text-gray-700">Time per answer (seconds): <span id="time-per-answer-value">1</span></label>
+                <input type="range" id="time-per-answer-slider" min="0.3" max="10" value="1" step="0.1" class="w-64 mt-2">
             </div>
             <div class="flex flex-col items-center mt-2">
-                <label for="questions-slider" class="text-sm font-medium text-gray-700">Number of questions: <span id="questions-value">20</span></label>
-                <input type="range" id="questions-slider" min="10" max="50" value="20" step="5" class="w-64 mt-2">
+                <label for="questions-slider" class="text-sm font-medium text-gray-700">Number of questions: <span id="questions-value">10</span></label>
+                <input type="range" id="questions-slider" min="10" max="50" value="10" step="5" class="w-64 mt-2">
             </div>
             <div class="flex justify-center gap-4 mt-4">
                 <button id="startTimedGameButton" class="px-6 py-3 bg-green-500 text-white font-bold rounded-lg shadow-md hover:bg-green-600 transition-colors duration-200 text-xl">Start Timed Game</button>
@@ -424,12 +425,12 @@
 
             // Game state variables
             let correctAnswers = 0;
-            let totalQuestions = 20;
+            let totalQuestions = 10;
             let currentQuestion = 0;
             let areColorsDifferent = false;
             let isGameRunning = false;
             let isTimeAttack = false;
-            let timePerAnswer = 3000;
+            let timePerAnswer = 1000;
             let timer;
             let timeRemaining;
             let seamLineExists = true;
