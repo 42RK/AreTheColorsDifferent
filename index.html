@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Are The Colors Different?</title>
+    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggdFgIh/pT3eAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVUoAABu88m4AAAATUlEQVQ4y2NgGPxgA/gA4k8AowA4kYgAygASlYyMjo+P//8wMDAyMDJgYGBgAAOAAAw8fPw+o/iBgYEBAJk2kCQAJdABhQYGBgYGAGFk/w8CgYGBgABhAAAhbQ5GkgoAAAAASUVORK5CYII=">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -414,6 +415,7 @@
             const pausedOverlay = document.getElementById('pausedOverlay');
             const unpauseButton = document.getElementById('unpauseButton');
             const resetButton = document.getElementById('resetButton');
+            const favicon = document.getElementById('favicon');
 
             // Game state variables
             let correctAnswers = 0;
@@ -459,6 +461,19 @@
 
                 // Call the UI update function after loading settings
                 updateSeamLineUI();
+            }
+
+            // Function to dynamically update the favicon color
+            function updateFavicon(color) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 32;
+                canvas.height = 32;
+                const ctx = canvas.getContext('2d');
+                ctx.beginPath();
+                ctx.arc(16, 16, 16, 0, Math.PI * 2, false);
+                ctx.fillStyle = color;
+                ctx.fill();
+                favicon.href = canvas.toDataURL('image/png');
             }
             
             // Function to get the difficulty offset
@@ -525,6 +540,8 @@
                 square1.style.backgroundColor = color1;
                 square2.style.backgroundColor = color2;
                 
+                updateFavicon(color1);
+
                 if (seamLineExists) {
                     const seamLineDuration = parseFloat(seamLineSlider.value) * 1000;
                     if (seamLineDuration > 0) {
