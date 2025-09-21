@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Are The Colors Different?</title>
-    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggdFgIh/pT3eAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVUoAABu88m4AAAATUlEQVQ4y2NgGPxgA/gA4k8AowA4kYgAygASlYyMjo+P//8wMDAyMDJgYGBgAAOAAAw8fPw+o/iBgYEBAJk2kCQAJdABhQYGBgYGAGFk/w8CgYGBgABhAAAhbQ5GkgoAAAAASUVORK5CYII=">
+    <link id="favicon" rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4ggdFgIh/pT3eAAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVUoAABu88m4AAAAATUlEQVQ4y2NgGPxgA/gA4k8AowA4kYgAygASlYyMjo+P//8wMDAyMDJgYGBgAAOAAAw8fPw+o/iBgYEBAJk2kCQAJdABhQYGBgYGAGFk/w8CgYGBgABhAAAhbQ5GkgoAAAAASUVORK5CYII=">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -305,7 +305,7 @@
                 <button id="noButton" class="px-8 py-4 bg-red-500 text-white font-bold rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200 text-xl">no</button>
             </div>
             <!-- New element for keyboard controls hint -->
-            <div id="keyboardControls" class="mt-2 text-sm text-gray-500 font-medium hidden">
+            <div id="keyboardControls" class="mt-2 text-sm text-gray-500 font-medium">
                 <span>&#8592; No</span> | <span>Yes &#8594;</span>
             </div>
         </div>
@@ -700,7 +700,7 @@
 
             // Function to detect if the device has a touchscreen
             function isTouchDevice() {
-                return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+                return ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
             }
 
             // Add event listeners
@@ -780,11 +780,6 @@
             closeHelpButton.addEventListener('click', () => {
                 helpBox.classList.add('hidden');
             });
-            
-            // Show keyboard controls if not a touch device
-            if (!isTouchDevice()) {
-                keyboardControls.classList.remove('hidden');
-            }
 
             // Add keyboard event listener for game controls
             document.addEventListener('keydown', (event) => {
@@ -797,6 +792,11 @@
                     yesButton.click();
                 }
             });
+
+            // Hide keyboard controls if it's a small touch device
+            if (isTouchDevice() && window.innerWidth < 768) {
+                keyboardControls.classList.add('hidden');
+            }
 
 
             // Initial setup for normal mode and game start
