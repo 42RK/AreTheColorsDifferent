@@ -433,6 +433,16 @@
                 localStorage.setItem('seamLineDuration', seamLineSlider.value.toString());
             }
 
+            // Function to update the UI elements related to the seam line
+            function updateSeamLineUI() {
+                seamLineToggle.checked = seamLineExists;
+                seamLineTimeButton.style.display = seamLineExists ? 'block' : 'none';
+                if (!seamLineExists) {
+                    seamLineTimeSliderContainer.classList.add('hidden');
+                    seamLine.classList.remove('visible');
+                }
+            }
+
             // Function to load settings from localStorage
             function loadSettings() {
                 const savedSeamLineExists = localStorage.getItem('seamLineExists');
@@ -440,7 +450,6 @@
 
                 if (savedSeamLineExists !== null) {
                     seamLineExists = JSON.parse(savedSeamLineExists);
-                    seamLineToggle.checked = seamLineExists;
                 }
 
                 if (savedSeamLineDuration !== null) {
@@ -448,7 +457,8 @@
                     seamLineValue.textContent = savedSeamLineDuration;
                 }
 
-                seamLineTimeButton.style.display = seamLineExists ? 'block' : 'none';
+                // Call the UI update function after loading settings
+                updateSeamLineUI();
             }
             
             // Function to get the difficulty offset
@@ -679,7 +689,7 @@
                 }
             });
 
-            // Toggle seam line time slider and save settings
+            // Toggle seam line time slider
             seamLineTimeButton.addEventListener('click', () => {
                 seamLineTimeSliderContainer.classList.toggle('hidden');
             });
@@ -692,9 +702,7 @@
             // Seam line toggle listener
             seamLineToggle.addEventListener('change', (e) => {
                 seamLineExists = e.target.checked;
-                // Hide the time button if the seam line is toggled off
-                seamLineTimeButton.style.display = e.target.checked ? 'block' : 'none';
-                seamLineTimeSliderContainer.classList.add('hidden');
+                updateSeamLineUI();
                 saveSettings();
             });
             
