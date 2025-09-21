@@ -359,7 +359,7 @@
                             </tr>
                             <tr>
                                 <td class="p-2 border-b border-gray-300 font-bold">Easy</td>
-                                <td class="p-2 border-b border-gray-300">Obvious</td>
+                                <td class="p-2 border-b border-gray-300 font-bold">Obvious</td>
                                 <td class="p-2 border-b border-gray-300">5</td>
                             </tr>
                         </tbody>
@@ -427,6 +427,30 @@
             let timeRemaining;
             let seamLineExists = true;
 
+            // Function to save settings to localStorage
+            function saveSettings() {
+                localStorage.setItem('seamLineExists', JSON.stringify(seamLineToggle.checked));
+                localStorage.setItem('seamLineDuration', seamLineSlider.value.toString());
+            }
+
+            // Function to load settings from localStorage
+            function loadSettings() {
+                const savedSeamLineExists = localStorage.getItem('seamLineExists');
+                const savedSeamLineDuration = localStorage.getItem('seamLineDuration');
+
+                if (savedSeamLineExists !== null) {
+                    seamLineExists = JSON.parse(savedSeamLineExists);
+                    seamLineToggle.checked = seamLineExists;
+                }
+
+                if (savedSeamLineDuration !== null) {
+                    seamLineSlider.value = savedSeamLineDuration;
+                    seamLineValue.textContent = savedSeamLineDuration;
+                }
+
+                seamLineTimeButton.style.display = seamLineExists ? 'block' : 'none';
+            }
+            
             // Function to get the difficulty offset
             function getDifficultyOffset() {
                 return parseInt(difficultySelect.value, 10);
@@ -654,13 +678,15 @@
                     startGame();
                 }
             });
-            seamLineSlider.addEventListener('input', () => {
-                seamLineValue.textContent = seamLineSlider.value;
-            });
 
-            // Toggle seam line time slider
+            // Toggle seam line time slider and save settings
             seamLineTimeButton.addEventListener('click', () => {
                 seamLineTimeSliderContainer.classList.toggle('hidden');
+            });
+
+            seamLineSlider.addEventListener('input', () => {
+                seamLineValue.textContent = seamLineSlider.value;
+                saveSettings();
             });
             
             // Seam line toggle listener
@@ -669,6 +695,7 @@
                 // Hide the time button if the seam line is toggled off
                 seamLineTimeButton.style.display = e.target.checked ? 'block' : 'none';
                 seamLineTimeSliderContainer.classList.add('hidden');
+                saveSettings();
             });
             
             // Mode switch listener
@@ -720,6 +747,7 @@
             });
 
             // Initial setup for normal mode and game start
+            loadSettings();
             startGame();
         };
     </script>
